@@ -18,10 +18,15 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("upload-keystore.jks")
-            storePassword System.getenv("UPLOAD_STORE_PASS")
-            keyAlias System.getenv("UPLOAD_KEY_ALIAS")
-            keyPassword System.getenv("UPLOAD_KEY_PASS")
+            def signingPropsFile = file("signing.properties")
+            if (signingPropsFile.exists()) {
+                def signingProps = new Properties()
+                signingProps.load(new FileInputStream(signingPropsFile))
+                storeFile file("upload-keystore.jks")
+                storePassword signingProps['UPLOAD_STORE_PASS']
+                keyAlias signingProps['UPLOAD_KEY_ALIAS']
+                keyPassword signingProps['UPLOAD_KEY_PASS']
+            }
         }
     }
 
