@@ -23,12 +23,19 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Decode Keystore
-        id: decode_keystore
-        run: echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > app/upload-keystore.jks
+      - name: Setup Signing Files
+        run: |
+          # Decode Keystore
+          echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 --decode > app/upload-keystore.jks
+          
+          # Create signing.properties for Gradle
+          echo "UPLOAD_STORE_PASS=${{ secrets.UPLOAD_STORE_PASS }}" > app/signing.properties
+          echo "UPLOAD_KEY_ALIAS=${{ secrets.UPLOAD_KEY_ALIAS }}" >> app/signing.properties
+          echo "UPLOAD_KEY_PASS=${{ secrets.UPLOAD_KEY_PASS }}" >> app/signing.properties
+
 
       - name: Build Release AAB
-        run: ./gradlew bundleRelease -Pandroid.injected.signing.store.file=app/upload-keystore.jks -Pandroid.injected.signing.key.alias=${{ secrets.UPLOAD_KEY_ALIAS }} -Pandroid.injected.signing.store.password=${{ secrets.UPLOAD_STORE_PASS }} -Pandroid.injected.signing.key.password=${{ secrets.UPLOAD_KEY_PASS }}
+        run: ./gradlew bundleRelease
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
